@@ -1,0 +1,29 @@
+services:
+  honeypot:
+    build: .
+    container_name: honeypot
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      HONEYPOT_TOKEN: "${HONEYPOT_TOKEN:-}"
+      HONEYPOT_API_PREFIX: "${HONEYPOT_API_PREFIX:-2026_10_questions}"
+      DECOY_TCP_PORTS: "${DECOY_TCP_PORTS:-3306:mysql,6379:redis,9200:elasticsearch,27017:mongodb}"
+    ports:
+      # 宿主 HTTP 端口（80 或自定义）-> 容器内 8000
+      - "${HTTP_PORT:-80}:8000"
+      # 假数据库端口；和 DECOY_TCP_PORTS 保持一致
+      - "3306:3306"
+      - "6379:6379"
+      - "9200:9200"
+      - "27017:27017"
+    volumes:
+      - ./data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
